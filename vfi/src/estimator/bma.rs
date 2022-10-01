@@ -4,18 +4,13 @@ use image::{ImageBuffer, Rgb};
 use num::integer::div_ceil;
 
 pub struct BMA {
-    frame_1: Option<ImageBuffer<Rgb<u8>, Vec<u8>>>,
-    frame_2: Option<ImageBuffer<Rgb<u8>, Vec<u8>>>,
-    width: u32,
-    height: u32,
-
-    verbose: bool,
-
     block_width: u32,
     search_radius: u8,
     use_movement_map: bool,
     movement_map_min_pix_diff: u16,
     movement_map_min_change_percentage: u16,
+
+    verbose: bool,
 
     padding: u32,
 }
@@ -23,31 +18,16 @@ pub struct BMA {
 impl BMA {
     pub fn new() -> BMA {
         BMA {
-            frame_1: None,
-            frame_2: None,
-            width: 0,
-            height: 0,
-            verbose: false,
-
             block_width: 16,
             search_radius: 7,
             use_movement_map: true,
             movement_map_min_pix_diff: 10,
             movement_map_min_change_percentage: 30,
 
+            verbose: false,
+
             padding: 7 + 16,
         }
-    }
-
-    pub fn set_frames(
-        &mut self,
-        frame_1: ImageBuffer<Rgb<u8>, Vec<u8>>,
-        frame_2: ImageBuffer<Rgb<u8>, Vec<u8>>,
-    ) {
-        assert_eq!(frame_1.dimensions(), frame_2.dimensions());
-        (self.width, self.height) = frame_1.dimensions();
-        self.frame_1 = Some(frame_1);
-        self.frame_2 = Some(frame_2);
     }
 
     pub fn set_verbose(&mut self, verbose: bool) {
@@ -78,16 +58,20 @@ impl BMA {
 }
 
 impl BMA {
-    fn has_block_moved(&self, block_i: u32, block_j: u32) -> bool {
+    fn has_block_moved(
+        &self,
+        block_i: u32,
+        block_j: u32,
+        frame_1: &ImageBuffer<Rgb<u8>, Vec<u8>>,
+        frame_2: &ImageBuffer<Rgb<u8>, Vec<u8>>,
+    ) -> bool {
         let mut changed_pixels: u32 = 0;
         for x in 0..self.block_width {
             for y in 0..self.block_width {
                 let pix_x = block_j * self.block_width + x;
                 let pix_y = block_i * self.block_width + y;
-                if pixel_difference(
-                    self.frame_1.as_ref().unwrap()[(pix_x, pix_y)],
-                    self.frame_2.as_ref().unwrap()[(pix_x, pix_y)],
-                ) > self.movement_map_min_pix_diff
+                if pixel_difference(frame_1[(pix_x, pix_y)], frame_2[(pix_x, pix_y)])
+                    > self.movement_map_min_pix_diff
                 {
                     changed_pixels += 1;
                 }
@@ -138,19 +122,26 @@ impl BMA {
         motion_vector
     }
 
-    pub fn calc_flow(&self) -> Vec<Vec<(i16, i16)>> {
-        let pf1 = add_padding(&self.frame_1.as_ref().unwrap(), self.padding);
-        let pf2 = add_padding(&self.frame_2.as_ref().unwrap(), self.padding);
+    pub fn calc_flow(
+        &self,
+        frame_1: &ImageBuffer<Rgb<u8>, Vec<u8>>,
+        frame_2: &ImageBuffer<Rgb<u8>, Vec<u8>>,
+    ) -> Vec<Vec<(i16, i16)>> {
+        let pf1 = add_padding(frame_1, self.padding);
+        let pf2 = add_padding(frame_2, self.padding);
 
-        let hor_blocks = div_ceil(self.width, self.block_width);
-        let ver_blocks = div_ceil(self.height, self.block_width);
+        let (width, height) = frame_1.dimensions();
+        let hor_blocks = div_ceil(width, self.block_width);
+        let ver_blocks = div_ceil(height, self.block_width);
 
         let mut flow = vec![vec![(0i16, 0i16); hor_blocks as usize]; ver_blocks as usize];
 
+        println!("ASS1");
         for block_i in 0..ver_blocks {
             for block_j in 0..hor_blocks {
                 if !self.use_movement_map
-                    || (self.use_movement_map && self.has_block_moved(block_i, block_j))
+                    || (self.use_movement_map
+                        && self.has_block_moved(block_i, block_j, frame_1, frame_2))
                 {
                     let motion_vector = self.get_motion_vector(&pf1, &pf2, block_i, block_j);
                     flow[block_i as usize][block_j as usize] = motion_vector;

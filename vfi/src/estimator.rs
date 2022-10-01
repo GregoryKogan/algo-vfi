@@ -49,15 +49,12 @@ impl Estimator {
         self.algorithm = algo;
     }
 
-    pub fn estimate_motion(&mut self) -> Vec<Vec<(i16, i16)>> {
+    pub fn estimate_motion(&self) -> Vec<Vec<(i16, i16)>> {
         match self.algorithm {
-            Algorithm::BlockMatching => {
-                self.bma.set_frames(
-                    self.frame_1.as_ref().unwrap().clone(),
-                    self.frame_2.as_ref().unwrap().clone(),
-                );
-                self.bma.calc_flow()
-            }
+            Algorithm::BlockMatching => self.bma.calc_flow(
+                self.frame_1.as_ref().unwrap(),
+                self.frame_2.as_ref().unwrap(),
+            ),
         }
     }
 }
