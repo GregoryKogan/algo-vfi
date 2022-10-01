@@ -1,5 +1,5 @@
 use estimator::Algorithm;
-use visualizer::visualize_as_vector_field;
+use visualizer::{visualize_flow, VisualizationMethod};
 
 use crate::estimator::Estimator;
 
@@ -23,5 +23,8 @@ fn main() {
     estimator.set_frames(frame_1, frame_2);
 
     let flow = estimator.estimate_motion();
-    visualize_as_vector_field(flow, 8).save("VF.png").unwrap();
+    // visualize_as_vector_field(&flow, 8).save("VF.png").unwrap();
+    visualize_flow(&flow, 8, VisualizationMethod::HSEScheme)
+        .save("Flow.png")
+        .unwrap();
 }
