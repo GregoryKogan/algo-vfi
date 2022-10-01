@@ -136,7 +136,6 @@ impl BMA {
 
         let mut flow = vec![vec![(0i16, 0i16); hor_blocks as usize]; ver_blocks as usize];
 
-        println!("ASS1");
         for block_i in 0..ver_blocks {
             for block_j in 0..hor_blocks {
                 if !self.use_movement_map

@@ -1,9 +1,12 @@
 use estimator::Algorithm;
+use visualizer::visualize_as_vector_field;
 
 use crate::estimator::Estimator;
 
 mod estimator;
 mod operations;
+mod plotter;
+mod visualizer;
 
 fn main() {
     let mut estimator = Estimator::new();
@@ -19,5 +22,6 @@ fn main() {
     let frame_2 = image::open("./input/70.png").unwrap().into_rgb8();
     estimator.set_frames(frame_1, frame_2);
 
-    estimator.estimate_motion();
+    let flow = estimator.estimate_motion();
+    visualize_as_vector_field(flow, 8).save("VF.png").unwrap();
 }
