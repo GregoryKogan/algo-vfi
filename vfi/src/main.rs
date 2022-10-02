@@ -10,7 +10,7 @@ mod visualizer;
 
 fn main() {
     let mut estimator = Estimator::new();
-    estimator.set_algorithm(Algorithm::BlockMatching);
+    estimator.set_algorithm(Algorithm::BidirectionalBlockMatching);
     estimator.settings.verbose = true;
     estimator.settings.block_matching.block_width = 8;
     estimator.settings.block_matching.search_radius = 7;
