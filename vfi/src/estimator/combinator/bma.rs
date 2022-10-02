@@ -96,9 +96,9 @@ impl BMA {
         img_2: &ImageBuffer<Rgb<u8>, Vec<u8>>,
         block_i: u32,
         block_j: u32,
-    ) -> (i16, i16) {
-        let mut motion_vector: (i16, i16) = (0, 0);
+    ) -> (i16, i16, u32) {
         let mut error = u32::MAX;
+        let mut motion_vector: (i16, i16, u32) = (0, 0, error);
 
         for x_offset in self.search_radius as i16 * (-1)..self.search_radius as i16 {
             for y_offset in self.search_radius as i16 * (-1)..self.search_radius as i16 {
@@ -120,7 +120,7 @@ impl BMA {
                 cur_error /= self.block_width * self.block_width;
                 if cur_error < error {
                     error = cur_error;
-                    motion_vector = (x_offset, y_offset);
+                    motion_vector = (x_offset, y_offset, cur_error);
                 }
             }
         }
@@ -132,7 +132,7 @@ impl BMA {
         &self,
         frame_1: &ImageBuffer<Rgb<u8>, Vec<u8>>,
         frame_2: &ImageBuffer<Rgb<u8>, Vec<u8>>,
-    ) -> Vec<Vec<(i16, i16)>> {
+    ) -> Vec<Vec<(i16, i16, u32)>> {
         let pf1 = add_padding(frame_1, self.padding);
         let pf2 = add_padding(frame_2, self.padding);
 
@@ -140,7 +140,7 @@ impl BMA {
         let hor_blocks = div_ceil(width, self.block_width);
         let ver_blocks = div_ceil(height, self.block_width);
 
-        let mut flow = vec![vec![(0i16, 0i16); hor_blocks as usize]; ver_blocks as usize];
+        let mut flow = vec![vec![(0i16, 0i16, u32::MAX); hor_blocks as usize]; ver_blocks as usize];
 
         for block_i in 0..ver_blocks {
             for block_j in 0..hor_blocks {
@@ -151,8 +151,11 @@ impl BMA {
                     let motion_vector = self.get_motion_vector(&pf1, &pf2, block_i, block_j);
                     flow[block_i as usize][block_j as usize] = motion_vector;
 
-                    if self.verbose && motion_vector != (0, 0) {
-                        println!("Block {},{} -> {:?}", block_j, block_i, motion_vector);
+                    if self.verbose && (motion_vector.0, motion_vector.1) != (0, 0) {
+                        println!(
+                            "Block {},{} -> ({}, {}), error: {}",
+                            block_j, block_i, motion_vector.0, motion_vector.1, motion_vector.2
+                        );
                     }
                 }
             }

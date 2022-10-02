@@ -10,10 +10,11 @@ mod visualizer;
 
 fn main() {
     let mut estimator = Estimator::new();
-    estimator.set_algorithm(Algorithm::BidirectionalBlockMatching);
+    estimator.set_algorithm(Algorithm::SmoothedBidirectionalBlockMatching);
     estimator.settings.verbose = true;
     estimator.settings.block_matching.block_width = 8;
     estimator.settings.block_matching.search_radius = 7;
+    estimator.settings.smoothing.filter_window_width = 3;
 
     let frame_1 = image::open("./input/69.png").unwrap().into_rgb8();
     let frame_2 = image::open("./input/70.png").unwrap().into_rgb8();
@@ -25,6 +26,6 @@ fn main() {
         estimator.settings.block_matching.block_width,
         VisualizationMethod::HSEScheme,
     )
-    .save("Flow.png")
+    .save("SmoothFlow.png")
     .unwrap();
 }
