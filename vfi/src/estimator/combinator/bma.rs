@@ -3,6 +3,28 @@ use crate::operations::pixel_difference;
 use image::{ImageBuffer, Rgb};
 use num::integer::div_ceil;
 
+pub struct BmaSettings {
+    pub verbose: bool,
+    pub block_width: u32,
+    pub search_radius: u8,
+    pub use_movement_map: bool,
+    pub movement_map_min_pix_diff: u16,
+    pub movement_map_min_change_percentage: u16,
+}
+
+impl BmaSettings {
+    pub fn default() -> BmaSettings {
+        BmaSettings {
+            verbose: false,
+            block_width: 16,
+            search_radius: 7,
+            use_movement_map: true,
+            movement_map_min_pix_diff: 10,
+            movement_map_min_change_percentage: 30,
+        }
+    }
+}
+
 pub struct BMA {
     block_width: u32,
     search_radius: u8,
@@ -30,30 +52,14 @@ impl BMA {
         }
     }
 
-    pub fn set_verbose(&mut self, verbose: bool) {
-        self.verbose = verbose;
-    }
-
-    pub fn set_block_width(&mut self, b_width: u32) {
-        self.block_width = b_width;
+    pub fn apply_settings(&mut self, settings: &BmaSettings) {
+        self.verbose = settings.verbose;
+        self.block_width = settings.block_width;
+        self.search_radius = settings.search_radius;
         self.padding = self.search_radius as u32 + self.block_width;
-    }
-
-    pub fn set_search_radius(&mut self, s_radius: u8) {
-        self.search_radius = s_radius;
-        self.padding = self.search_radius as u32 + self.block_width;
-    }
-
-    pub fn set_use_movement_map(&mut self, use_mov_map: bool) {
-        self.use_movement_map = use_mov_map;
-    }
-
-    pub fn set_movement_map_min_pix_diff(&mut self, min_pix_diff: u16) {
-        self.movement_map_min_pix_diff = min_pix_diff;
-    }
-
-    pub fn set_movement_map_min_change_percentage(&mut self, min_change_percentage: u16) {
-        self.movement_map_min_change_percentage = min_change_percentage;
+        self.use_movement_map = settings.use_movement_map;
+        self.movement_map_min_pix_diff = settings.movement_map_min_pix_diff;
+        self.movement_map_min_change_percentage = settings.movement_map_min_change_percentage;
     }
 }
 

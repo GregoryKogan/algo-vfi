@@ -1,32 +1,23 @@
-mod bma;
+pub mod combinator;
 
-use self::bma::BMA;
 use image::{ImageBuffer, Rgb};
 
-pub enum Algorithm {
-    BlockMatching,
-}
+use self::combinator::{run_algo, AlgoSettings, Algorithm};
 
 pub struct Estimator {
     frame_1: Option<ImageBuffer<Rgb<u8>, Vec<u8>>>,
     frame_2: Option<ImageBuffer<Rgb<u8>, Vec<u8>>>,
-
-    verbose: bool,
-
     algorithm: Algorithm,
-
-    pub bma: BMA,
+    pub settings: AlgoSettings,
 }
 
 impl Estimator {
     pub fn new() -> Estimator {
-        let bma = BMA::new();
         Estimator {
-            verbose: false,
             algorithm: Algorithm::BlockMatching,
+            settings: AlgoSettings::default(),
             frame_1: None,
             frame_2: None,
-            bma,
         }
     }
 
@@ -40,21 +31,16 @@ impl Estimator {
         self.frame_2 = Some(frame_2);
     }
 
-    pub fn set_verbose(&mut self, verbose: bool) {
-        self.verbose = verbose;
-        self.bma.set_verbose(verbose);
-    }
-
     pub fn set_algorithm(&mut self, algo: Algorithm) {
         self.algorithm = algo;
     }
 
-    pub fn estimate_motion(&self) -> Vec<Vec<(i16, i16)>> {
-        match self.algorithm {
-            Algorithm::BlockMatching => self.bma.calc_flow(
-                self.frame_1.as_ref().unwrap(),
-                self.frame_2.as_ref().unwrap(),
-            ),
-        }
+    pub fn estimate_motion(&mut self) -> Vec<Vec<(i16, i16)>> {
+        run_algo(
+            &self.algorithm,
+            self.frame_1.as_ref().unwrap(),
+            self.frame_2.as_ref().unwrap(),
+            &mut self.settings,
+        )
     }
 }
