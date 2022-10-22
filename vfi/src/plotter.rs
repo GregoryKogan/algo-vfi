@@ -67,9 +67,12 @@ pub fn draw_rect(
     h: u32,
     color: Rgb<u8>,
 ) {
+    let (img_w, img_h) = img.dimensions();
     for ox in 0..w {
         for oy in 0..h {
-            img.put_pixel(x + ox, y + oy, color);
+            if x + ox < img_w && y + oy < img_h {
+                img.put_pixel(x + ox, y + oy, color);
+            }
         }
     }
 }

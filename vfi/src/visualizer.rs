@@ -6,7 +6,7 @@ use crate::plotter::draw_line;
 use crate::plotter::draw_rect;
 
 fn visualize_as_vector_field(
-    vf: &Vec<Vec<(i16, i16)>>,
+    vf: &Vec<Vec<(f32, f32)>>,
     block_size: u32,
 ) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
     let (height, width) = (
@@ -16,7 +16,7 @@ fn visualize_as_vector_field(
     let mut img: RgbImage = ImageBuffer::new(width, height);
     for i in 0..vf.len() {
         for j in 0..vf[i].len() {
-            if vf[i][j] == (0, 0) {
+            if vf[i][j] == (0.0, 0.0) {
                 continue;
             }
             let sx = j as u32 * block_size + block_size / 2;
@@ -31,14 +31,14 @@ fn visualize_as_vector_field(
     img
 }
 
-fn cartesian_to_polar(dx: i16, dy: i16) -> (f64, f64) {
-    let magnitude = ((dx.pow(2) + dy.pow(2)) as f64).sqrt();
-    let angle_rad = (dy as f64).atan2(dx as f64);
-    let angle = (360.0 + 180.0 * angle_rad / PI) % 360.0;
+fn cartesian_to_polar(dx: f32, dy: f32) -> (f32, f32) {
+    let magnitude = (dx.powf(2.0) + dy.powf(2.0)).sqrt();
+    let angle_rad = (dy).atan2(dx);
+    let angle = (360.0 + 180.0 * angle_rad / PI as f32) % 360.0;
     (magnitude, angle)
 }
 
-fn hsv_to_rgb(h_val: f64, s_val: f64, v_val: f64) -> Option<Rgb<u8>> {
+fn hsv_to_rgb(h_val: f32, s_val: f32, v_val: f32) -> Option<Rgb<u8>> {
     if h_val > 360.0 || h_val < 0.0 || s_val > 100.0 || s_val < 0.0 || v_val > 100.0 || v_val < 0.0
     {
         return None;
@@ -49,9 +49,9 @@ fn hsv_to_rgb(h_val: f64, s_val: f64, v_val: f64) -> Option<Rgb<u8>> {
     let c = s * v;
     let x = c * (1.0 - ((h_val / 60.0 % 2.0) - 1.0).abs());
     let m = v - c;
-    let r: f64;
-    let g: f64;
-    let b: f64;
+    let r: f32;
+    let g: f32;
+    let b: f32;
 
     if h_val >= 0.0 && h_val < 60.0 {
         r = c;
@@ -85,14 +85,14 @@ fn hsv_to_rgb(h_val: f64, s_val: f64, v_val: f64) -> Option<Rgb<u8>> {
     Some(Rgb([ir, ig, ib]))
 }
 
-fn vector_to_color(dx: i16, dy: i16, norm_factor: f64) -> Rgb<u8> {
+fn vector_to_color(dx: f32, dy: f32, norm_factor: f32) -> Rgb<u8> {
     let (magnitude, angle) = cartesian_to_polar(dx, dy);
-    let norm_magnitude = magnitude / norm_factor * 100.0;
+    let norm_magnitude = (magnitude / norm_factor * 100.0 / 1.5).clamp(0.0, 100.0);
     hsv_to_rgb(angle, 100.0, norm_magnitude).unwrap()
 }
 
 fn visualize_as_hsv_scheme(
-    vf: &Vec<Vec<(i16, i16)>>,
+    vf: &Vec<Vec<(f32, f32)>>,
     block_size: u32,
 ) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
     let (height, width) = (
@@ -101,21 +101,19 @@ fn visualize_as_hsv_scheme(
     );
     let mut img: RgbImage = ImageBuffer::new(width, height);
 
-    let mut max_mag: f64 = 0.0;
+    let mut avg_mag: f32 = 0.0;
     for i in 0..vf.len() {
         for j in 0..vf[i].len() {
-            let mag = (vf[i][j].0.pow(2) as f64 + vf[i][j].1.pow(2) as f64).sqrt();
-            if mag > max_mag {
-                max_mag = mag;
-            }
+            avg_mag += (vf[i][j].0.powf(2.0) + vf[i][j].1.powf(2.0)).sqrt() / (vf.len() * vf[0].len()) as f32;
         }
     }
+
     for i in 0..vf.len() {
         for j in 0..vf[i].len() {
-            let color = vector_to_color(vf[i][j].0, vf[i][j].1, max_mag);
+            let color = vector_to_color(vf[i][j].0, vf[i][j].1, avg_mag);
             let x = j as u32 * block_size;
             let y = i as u32 * block_size;
-            draw_rect(&mut img, x, y, block_size, block_size, color)
+            draw_rect(&mut img, x, y, block_size, block_size, color);
         }
     }
 
@@ -129,7 +127,7 @@ pub enum VisualizationMethod {
 }
 
 pub fn visualize_flow(
-    vf: &Vec<Vec<(i16, i16)>>,
+    vf: &Vec<Vec<(f32, f32)>>,
     block_size: u32,
     method: VisualizationMethod,
 ) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
