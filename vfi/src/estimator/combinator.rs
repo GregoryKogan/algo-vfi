@@ -1,6 +1,7 @@
 mod bidirectional_flow;
 mod bma;
 mod smoothing;
+mod convert_to_grayscale;
 
 use image::{ImageBuffer, Rgb};
 use std::process::Command;
@@ -8,7 +9,7 @@ use std::process::Command;
 use self::{
     bidirectional_flow::combine_bidirectional_flows,
     bma::{BmaSettings, BMA},
-    smoothing::{smooth_error_flow, SmoothingSettings},
+    smoothing::{smooth_error_flow, SmoothingSettings}, convert_to_grayscale::to_grayscale,
 };
 
 #[allow(dead_code)]
@@ -25,6 +26,7 @@ pub struct AlgoSettings {
     pub verbose: bool,
     pub block_matching: BmaSettings,
     pub smoothing: SmoothingSettings,
+    pub grayscale: bool,
 }
 
 impl AlgoSettings {
@@ -33,6 +35,7 @@ impl AlgoSettings {
             verbose: false,
             block_matching: BmaSettings::default(),
             smoothing: SmoothingSettings::default(),
+            grayscale: false,
         }
     }
 }
@@ -145,12 +148,18 @@ pub fn run_algo(
     frame_2_filename: String,
     settings: &mut AlgoSettings,
 ) -> Vec<Vec<(f32, f32)>> {
+    let res_frame_1: &mut ImageBuffer<Rgb<u8>, Vec<u8>> = &mut frame_1.clone();
+    let res_frame_2: &mut ImageBuffer<Rgb<u8>, Vec<u8>> = &mut frame_2.clone();
+    if settings.grayscale {
+        to_grayscale(res_frame_1);
+        to_grayscale(res_frame_2);
+    }
     match algo {
-        Algorithm::BlockMatching => run_bma(frame_1, frame_2, settings),
-        Algorithm::BidirectionalBlockMatching => run_bidirectional_bma(frame_1, frame_2, settings),
-        Algorithm::SmoothedBlockMatching => run_smoothed_bma(frame_1, frame_2, settings),
+        Algorithm::BlockMatching => run_bma(res_frame_1, res_frame_2, settings),
+        Algorithm::BidirectionalBlockMatching => run_bidirectional_bma(res_frame_1, res_frame_2, settings),
+        Algorithm::SmoothedBlockMatching => run_smoothed_bma(res_frame_1, res_frame_2, settings),
         Algorithm::SmoothedBidirectionalBlockMatching => {
-            run_smoothed_bidirectional_bma(frame_1, frame_2, settings)
+            run_smoothed_bidirectional_bma(res_frame_1, res_frame_2, settings)
         }
         Algorithm::LucasKanade => run_executable("lucas_kanade", frame_1_filename, frame_2_filename),
         Algorithm::GunnarFarneback => run_executable("farneback", frame_1_filename, frame_2_filename)

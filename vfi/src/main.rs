@@ -10,11 +10,12 @@ mod visualizer;
 
 fn main() {
     let mut estimator = Estimator::new();
-    estimator.set_algorithm(Algorithm::LucasKanade);
+    estimator.set_algorithm(Algorithm::SmoothedBidirectionalBlockMatching);
     estimator.settings.verbose = true;
-    // estimator.settings.block_matching.block_width = 8;
-    // estimator.settings.block_matching.search_radius = 7;
-    // estimator.settings.smoothing.filter_window_width = 3;
+    estimator.settings.block_matching.block_width = 4;
+    estimator.settings.block_matching.search_radius = 7;
+    estimator.settings.grayscale = true;
+    estimator.settings.smoothing.filter_window_width = 3;
 
     println!("Estimating...");
     estimator.set_frames_from_files("./input/69.png", "./input/70.png");
