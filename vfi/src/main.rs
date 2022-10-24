@@ -10,10 +10,10 @@ mod visualizer;
 
 fn main() {
     let mut estimator = Estimator::new();
-    estimator.set_algorithm(Algorithm::BidirectionalBlockMatching);
+    estimator.set_algorithm(Algorithm::LucasKanade);
     estimator.settings.verbose = true;
-    estimator.settings.block_matching.block_width = 8;
-    estimator.settings.block_matching.search_radius = 7;
+    // estimator.settings.block_matching.block_width = 8;
+    // estimator.settings.block_matching.search_radius = 7;
     // estimator.settings.smoothing.filter_window_width = 3;
 
     println!("Estimating...");
@@ -24,7 +24,7 @@ fn main() {
     println!("Visualizing...");
     visualize_flow(
         &flow,
-        8,
+        1,
         VisualizationMethod::HSEScheme,
     ).save("Flow.png").unwrap();
 }

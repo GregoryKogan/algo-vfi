@@ -87,7 +87,7 @@ fn hsv_to_rgb(h_val: f32, s_val: f32, v_val: f32) -> Option<Rgb<u8>> {
 
 fn vector_to_color(dx: f32, dy: f32, norm_factor: f32) -> Rgb<u8> {
     let (magnitude, angle) = cartesian_to_polar(dx, dy);
-    let norm_magnitude = (magnitude / norm_factor * 100.0 / 1.5).clamp(0.0, 100.0);
+    let norm_magnitude = (magnitude / norm_factor * 100.0).clamp(0.0, 100.0);
     hsv_to_rgb(angle, 100.0, norm_magnitude).unwrap()
 }
 
@@ -101,16 +101,18 @@ fn visualize_as_hsv_scheme(
     );
     let mut img: RgbImage = ImageBuffer::new(width, height);
 
-    let mut avg_mag: f32 = 0.0;
+    let mut mags: Vec<f32> = Vec::new();
     for i in 0..vf.len() {
         for j in 0..vf[i].len() {
-            avg_mag += (vf[i][j].0.powf(2.0) + vf[i][j].1.powf(2.0)).sqrt() / (vf.len() * vf[0].len()) as f32;
+           mags.push((vf[i][j].0.powf(2.0) + vf[i][j].1.powf(2.0)).sqrt());
         }
     }
+    mags.sort_by(|a, b| a.partial_cmp(b).unwrap());
+    let med_mag = mags[mags.len() / 10 * 9];
 
     for i in 0..vf.len() {
         for j in 0..vf[i].len() {
-            let color = vector_to_color(vf[i][j].0, vf[i][j].1, avg_mag);
+            let color = vector_to_color(vf[i][j].0, vf[i][j].1, med_mag);
             let x = j as u32 * block_size;
             let y = i as u32 * block_size;
             draw_rect(&mut img, x, y, block_size, block_size, color);
