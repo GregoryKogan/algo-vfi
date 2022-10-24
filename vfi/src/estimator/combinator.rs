@@ -2,6 +2,7 @@ mod bidirectional_flow;
 mod bma;
 mod smoothing;
 mod convert_to_grayscale;
+mod conv_edges;
 
 use image::{ImageBuffer, Rgb};
 use std::process::Command;
@@ -9,7 +10,7 @@ use std::process::Command;
 use self::{
     bidirectional_flow::combine_bidirectional_flows,
     bma::{BmaSettings, BMA},
-    smoothing::{smooth_error_flow, SmoothingSettings}, convert_to_grayscale::to_grayscale,
+    smoothing::{smooth_error_flow, SmoothingSettings}, convert_to_grayscale::to_grayscale, conv_edges::get_conv_edges,
 };
 
 #[allow(dead_code)]
@@ -27,6 +28,7 @@ pub struct AlgoSettings {
     pub block_matching: BmaSettings,
     pub smoothing: SmoothingSettings,
     pub grayscale: bool,
+    pub conv_edges: bool,
 }
 
 impl AlgoSettings {
@@ -36,6 +38,7 @@ impl AlgoSettings {
             block_matching: BmaSettings::default(),
             smoothing: SmoothingSettings::default(),
             grayscale: false,
+            conv_edges: false,
         }
     }
 }
@@ -153,6 +156,10 @@ pub fn run_algo(
     if settings.grayscale {
         to_grayscale(res_frame_1);
         to_grayscale(res_frame_2);
+    }
+    if settings.conv_edges {
+        get_conv_edges(res_frame_1);
+        get_conv_edges(res_frame_2);
     }
     match algo {
         Algorithm::BlockMatching => run_bma(res_frame_1, res_frame_2, settings),
