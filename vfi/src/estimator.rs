@@ -2,6 +2,8 @@ pub mod combinator;
 
 use image::{ImageBuffer, Rgb};
 
+use crate::operations::scale_up;
+
 use self::combinator::{run_algo, AlgoSettings, Algorithm};
 
 pub struct Estimator {
@@ -47,18 +49,24 @@ impl Estimator {
         self.set_frames_directly(frame_1, frame_2);
     }
 
+    pub fn get_frames_size(&self) -> (u32, u32) {
+        self.frame_1.as_ref().unwrap().dimensions()
+    }
+
     pub fn set_algorithm(&mut self, algo: Algorithm) {
         self.algorithm = algo;
     }
 
     pub fn estimate_motion(&mut self) -> Vec<Vec<(f32, f32)>> {
-        run_algo(
+        let flow = run_algo(
             &self.algorithm,
             self.frame_1.as_ref().unwrap(),
             self.frame_2.as_ref().unwrap(),
             self.frame_1_filename.clone().unwrap(),
             self.frame_2_filename.clone().unwrap(),
             &mut self.settings,
-        )
+        );
+        let scale_factor = self.get_frames_size().0 / flow[0].len() as u32;
+        scale_up(flow, scale_factor)
     }
 }

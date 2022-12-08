@@ -36,3 +36,24 @@ pub fn pixel_difference(pix_1: Rgb<u8>, pix_2: Rgb<u8>) -> u16 {
         + (ch1[2].abs_diff(ch2[2]) as u32).pow(2))
     .sqrt() as u16;
 }
+
+
+pub fn scale_up(flow: Vec<Vec<(f32, f32)>>, factor: u32) -> Vec<Vec<(f32, f32)>> {
+    if factor == 1 { return flow; }
+    let width = flow[0].len() * factor as usize;
+    let height = flow.len() * factor as usize;
+    let mut res_flow = vec![vec![(0f32, 0f32); width]; height];
+    for i in 0..flow.len() as u32 {
+        for j in 0..flow[0].len() as u32 {
+            for ib in 0..factor {
+                for jb in 0..factor {
+                    let res_i = i * factor + ib;
+                    let res_j = j * factor + jb;
+                    res_flow[res_i as usize][res_j as usize] = flow[i as usize][j as usize];
+                }
+            }
+        }
+    }
+
+    res_flow
+}
