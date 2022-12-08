@@ -13,6 +13,7 @@ pub struct Estimator {
     frame_2_filename: Option<String>,
     algorithm: Algorithm,
     pub settings: AlgoSettings,
+    pub description: String,
 }
 
 impl Estimator {
@@ -24,6 +25,7 @@ impl Estimator {
             frame_2: None,
             frame_1_filename: None,
             frame_2_filename: None,
+            description: "Default description".to_string(),
         }
     }
 

@@ -37,6 +37,15 @@ pub fn pixel_difference(pix_1: Rgb<u8>, pix_2: Rgb<u8>) -> u16 {
     .sqrt() as u16;
 }
 
+pub fn pixel_average(pix_1: Rgb<u8>, pix_2: Rgb<u8>) -> Rgb<u8> {
+    let ch1 = pix_1.channels();
+    let ch2 = pix_2.channels();
+    Rgb([
+        ((ch1[0] as u32 + ch2[0] as u32) / 2) as u8,
+        ((ch1[1] as u32 + ch2[1] as u32) / 2) as u8,
+        ((ch1[2] as u32 + ch2[2] as u32) / 2) as u8,
+    ])
+}
 
 pub fn scale_up(flow: Vec<Vec<(f32, f32)>>, factor: u32) -> Vec<Vec<(f32, f32)>> {
     if factor == 1 { return flow; }
