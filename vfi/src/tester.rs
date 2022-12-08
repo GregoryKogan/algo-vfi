@@ -175,10 +175,8 @@ fn create_video(algo_name: String) {
     Command::new("ffmpeg").args([
         "-framerate", 
         "30",
-        "-pattern_type", 
-        "glob",
         "-i",
-        &format!("./Results/{}/frames/*.png", algo_name),
+        &format!("./Results/{}/frames/%d.png", algo_name),
         "-c:v", 
         "libx264",
         "-pix_fmt",
@@ -189,10 +187,8 @@ fn create_video(algo_name: String) {
     Command::new("ffmpeg").args([
         "-framerate", 
         "30",
-        "-pattern_type", 
-        "glob",
         "-i",
-        &format!("./Results/{}/flow/*.png", algo_name),
+        &format!("./Results/{}/flow/%d.png", algo_name),
         "-c:v", 
         "libx264",
         "-pix_fmt",
@@ -215,7 +211,7 @@ pub fn test() {
 
         let now = Instant::now();
 
-        let input_frames = 5;
+        let input_frames = 180;
         for frame_index in 1..input_frames {
             println!("{}: {}/{} frames done", estimator.description, frame_index, input_frames);
             let frame_1_filename = &format!("./input/{}.png", frame_index);
