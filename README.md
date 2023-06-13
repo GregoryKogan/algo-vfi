@@ -1,4 +1,4 @@
-# Algo-VFI
+# algo-vfi
 Implementation of multiple optical flow estimation / video frame interpolation algorithms written in Rust
 
 <p align="center">
