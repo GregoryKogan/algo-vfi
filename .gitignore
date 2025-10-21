@@ -19,4 +19,11 @@ Cargo.lock
 
 # End of https://www.toptal.com/developers/gitignore/api/rust
 
+# Generated results
+vfi/Results/
+
+# Compiled executables
+vfi/src/executables/farneback
+vfi/src/executables/lucas_kanade
+
 .DS_Store
