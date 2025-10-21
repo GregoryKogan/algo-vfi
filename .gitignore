@@ -22,6 +22,9 @@ Cargo.lock
 # Generated results
 vfi/Results/
 
+# Generated input frames
+vfi/input/
+
 # Compiled executables
 vfi/src/executables/farneback
 vfi/src/executables/lucas_kanade
