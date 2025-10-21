@@ -2,7 +2,7 @@
 
 Implementation of multiple optical flow estimation / video frame interpolation algorithms written in Rust
 
-[Presentation](https://github.com/user-attachments/assets/86f8ed6b-1efa-4cca-b9db-185f9d0f1199)
+[Presentation](vfi/assets/VFI-Presentation.webm)
 
 <p align="center">
   <img src="https://github.com/GregoryKogan/GregoryKogan/blob/main/readme_assets/flow.gif" width=49% />
